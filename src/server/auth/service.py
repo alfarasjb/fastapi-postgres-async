@@ -37,7 +37,7 @@ class AuthService:
         await self.session.refresh(user_model)
         return user
 
-    async def get_user_by_id(self, user_id: int):
+    async def get_user_by_id(self, user_id: int) -> models.User:
         statement = select(models.User).where(models.User.id == user_id)
         result = await self.session.execute(statement)
         user = result.scalars().first()
@@ -46,6 +46,33 @@ class AuthService:
     async def delete_user_by_id(self, user_id: int):
         statement = select(models.User).where(models.User.id == user_id)
         result = await self.session.execute(statement)
-        user = result.first()
+        user = result.scalar()
         await self.session.delete(user)
         await self.session.commit()
+
+    async def get_user_by_name(self, user_name: str):
+        statement = select(models.User).where(models.User.name == user_name)
+        result = await self.session.execute(statement)
+        user = result.scalar().first()
+        return user
+
+    async def get_user_by_email(self, user_email: str):
+        statement = select(models.User).where(models.User.email == user_email)
+        result = await self.session.execute(statement)
+        user = result.scalar().first()
+        return user
+
+    async def update_user(self, user: schemas.User):
+        pass
+
+    async def update_user_by_id(self, user_id: int, user: schemas.User):
+        existing_user = await self.get_user_by_id(user_id=user_id)
+        if existing_user:
+            # User exists, then update
+            existing_user.name = user.name
+            existing_user.email = user.email
+            self.session.add(existing_user)  # Add the updated user to the session
+            await self.session.commit()
+            await self.session.refresh(existing_user)
+
+            return existing_user

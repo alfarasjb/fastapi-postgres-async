@@ -47,3 +47,28 @@ async def get_user_by_user_id(user_id: int, session: AsyncSession = Depends(get_
         err_msg = f"Failed to get user by user id. An unknown error occurred."
         logger.error(f"{err_msg} Error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=err_msg)
+
+
+@api.post("/api/update-user/<user_id>", response_model=schemas.User)
+async def update_user(user_id: int, user: schemas.User, session: AsyncSession = Depends(get_session)):
+    try:
+        logger.info(f"Updating User. Name: {user.name} Email: {user.email}")
+        service = AuthService(session=session)
+        updated_user = await service.update_user_by_id(user_id=user_id, user=user)
+        return updated_user
+    except Exception as e:
+        err_msg = f"Failed to update user. An unknown error occurred."
+        logger.error(f"{err_msg} Error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=err_msg)
+
+
+@api.post("/api/delete-user/<user_id>")
+async def delete_user(user_id: int, session: AsyncSession = Depends(get_session)):
+    try:
+        logger.info(f"Deleting User. ID: {user_id}")
+        service = AuthService(session=session)
+        await service.delete_user_by_id(user_id=user_id)
+    except Exception as e:
+        err_msg = f"Failed to delete user. An unknown error occurred."
+        logger.error(f"{err_msg} Error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=err_msg)
