@@ -1,14 +1,13 @@
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from src.database import Base, init_db
-from src.config import SETTINGS
 import pytest
+from fastapi.testclient import TestClient
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
+
+from src.config import SETTINGS
+from src.database import Base, init_db
 from src.main import app
 
-
+# Run pytest --disable-warnings -s
 
 DATABASE_URL = SETTINGS.TEST_POSTGRES_URI
 
@@ -37,3 +36,20 @@ client = TestClient(app)
 def test_get_users(test_db):
     response = client.get("/api/get-users")
     assert response.status_code == 200
+
+
+def test_create_user(test_db):
+    response = client.post("/api/create-user", json={"email": "test_email", "name": "test_name"})
+    data = response.json()
+
+
+def test_get_user_by_user_id(test_db):
+    pass
+
+
+def test_update_user(test_db):
+    pass
+
+
+def test_delete_user(test_db):
+    pass
