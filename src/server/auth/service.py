@@ -42,6 +42,7 @@ class AuthService:
         statement = select(models.User)
         result = await self.session.exec(statement)
         # Always get scalar. Otherwise, you will get a value error
+        # Note: No need to get scalar if using SQLModel.
         users = result.all()
         logger.info(f"Result: {users}")
         return users

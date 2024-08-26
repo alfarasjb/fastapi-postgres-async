@@ -1,19 +1,23 @@
 import logging
+from typing import Optional, Sequence
 
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.ext.asyncio.session import AsyncSession
 
 from src.database import get_session
-from src.server.auth import schemas
+from src.server.auth import schemas, models
 from src.server.auth.service import AuthService
+from src.server.auth.constants import *
 
 logger = logging.getLogger(__name__)
 
 api = APIRouter()
 
 
-@api.post("/api/create-user", response_model=schemas.User)
-async def create_user(user: schemas.User, session: AsyncSession = Depends(get_session)):
+@api.post(CREATE_USER_ROUTE, response_model=schemas.User)
+async def create_user(
+        user: schemas.User, session: AsyncSession = Depends(get_session)
+) -> Optional[models.User]:
     try:
         logger.info(f"Creating user. Email: {user.email} Name: {user.name}")
         service = AuthService(session=session)
@@ -25,8 +29,10 @@ async def create_user(user: schemas.User, session: AsyncSession = Depends(get_se
         raise HTTPException(status_code=500, detail=err_msg)
 
 
-@api.get("/api/get-users")
-async def get_users(session: AsyncSession = Depends(get_session)):
+@api.get(GET_USERS_ROUTE)
+async def get_users(
+        session: AsyncSession = Depends(get_session)
+) -> Optional[Sequence[models.User]]:
     try:
         logger.info(f"Getting all users")
         service = AuthService(session=session)
@@ -38,8 +44,10 @@ async def get_users(session: AsyncSession = Depends(get_session)):
         raise HTTPException(status_code=500, detail=err_msg)
 
 
-@api.get("/api/get-user/<user_id>")
-async def get_user_by_user_id(user_id: int, session: AsyncSession = Depends(get_session)):
+@api.get(GET_USER_BY_USER_ID_ROUTE)
+async def get_user_by_user_id(
+        user_id: int, session: AsyncSession = Depends(get_session)
+) -> Optional[models.User]:
     try:
         logger.info(f"Getting User by ID. ID: {user_id}")
         service = AuthService(session=session)
@@ -51,8 +59,10 @@ async def get_user_by_user_id(user_id: int, session: AsyncSession = Depends(get_
         raise HTTPException(status_code=500, detail=err_msg)
 
 
-@api.post("/api/update-user/<user_id>", response_model=schemas.User)
-async def update_user(user_id: int, user: schemas.User, session: AsyncSession = Depends(get_session)):
+@api.post(UPDATE_USER_ROUTE, response_model=schemas.User)
+async def update_user(
+        user_id: int, user: schemas.User, session: AsyncSession = Depends(get_session)
+) -> Optional[models.User]:
     try:
         logger.info(f"Updating User. Name: {user.name} Email: {user.email}")
         service = AuthService(session=session)
@@ -64,8 +74,10 @@ async def update_user(user_id: int, user: schemas.User, session: AsyncSession = 
         raise HTTPException(status_code=500, detail=err_msg)
 
 
-@api.post("/api/delete-user/<user_id>")
-async def delete_user(user_id: int, session: AsyncSession = Depends(get_session)):
+@api.post(DELETE_USER_ROUTE)
+async def delete_user(
+        user_id: int, session: AsyncSession = Depends(get_session)
+) -> None:
     try:
         logger.info(f"Deleting User. ID: {user_id}")
         service = AuthService(session=session)

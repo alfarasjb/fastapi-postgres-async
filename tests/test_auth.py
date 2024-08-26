@@ -1,55 +1,76 @@
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from httpx import AsyncClient
+from sqlalchemy import StaticPool
+from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import sessionmaker
+from sqlmodel import SQLModel
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.config import SETTINGS
-from src.database import Base, init_db
+from src.database import get_session
 from src.main import app
+from src.server.auth.constants import *
 
 # Run pytest --disable-warnings -s
+# TODO: Fix the tests
 
-DATABASE_URL = SETTINGS.TEST_POSTGRES_URI
+DATABASE_URL = SETTINGS.ASYNC_POSTGRES_URI
 
-async_engine = create_async_engine(url=DATABASE_URL)
+engine = create_async_engine(
+    DATABASE_URL,
+    poolclass=StaticPool
+)
 
-async def get_session() -> AsyncSession:
-    async_session = sessionmaker(bind=async_engine, class_=AsyncSession, expire_on_commit=False)
 
+async def override_get_session():
+    async_session = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
     async with async_session() as session:
         yield session
 
-@pytest.fixture()
-async def test_db():
-    try:
-        async with async_engine.begin() as conn:
-            from src.server.auth.models import User
-            await conn.run_sync(Base.metadata.create_all)
-    except Exception as e:
-        pass
-
-app.dependency_overrides[init_db] = get_session
-
 client = TestClient(app)
 
+app.dependency_overrides[get_session] = override_get_session
 
-def test_get_users(test_db):
-    response = client.get("/api/get-users")
+
+@pytest.fixture(scope="module", autouse=True)
+async def prepare_database():
+    """Fixture to initialize and clean up db"""
+    async with engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.create_all)
+    yield
+    # Cleanup
+    async with engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.drop_all)
+
+
+@pytest.fixture(scope="module")
+async def async_client():
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        yield ac
+
+
+def test_create_user():
+    response = client.post(CREATE_USER_ROUTE, json={"name": "test_name", "email": "test_email"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data['name'] == "test_name"
+    assert data['email'] == "test_email"
+
+
+def test_get_users():
+    response = client.get(GET_USERS_ROUTE)
+    print(response.status_code)
     assert response.status_code == 200
 
 
-def test_create_user(test_db):
-    response = client.post("/api/create-user", json={"email": "test_email", "name": "test_name"})
-    data = response.json()
-
-
-def test_get_user_by_user_id(test_db):
+def test_get_user_by_user_id():
     pass
 
 
-def test_update_user(test_db):
+def test_update_user():
     pass
 
 
-def test_delete_user(test_db):
+def test_delete_user():
     pass

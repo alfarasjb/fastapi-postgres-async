@@ -1,0 +1,5 @@
+CREATE_USER_ROUTE = "/api/create-user"
+GET_USERS_ROUTE = "/api/get-users"
+GET_USER_BY_USER_ID_ROUTE = "/api/get-user/<user_id>"
+UPDATE_USER_ROUTE = "/api/update-user/<user_id>"
+DELETE_USER_ROUTE = "/api/delete-user/<user_id>"
