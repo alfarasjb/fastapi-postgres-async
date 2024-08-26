@@ -15,6 +15,7 @@ DATABASE_URL = SETTINGS.ASYNC_POSTGRES_URI
 print(f"DB URL: {type(DATABASE_URL)}")
 async_engine = create_async_engine(url=DATABASE_URL)
 
+# NOTE: In the future, consider using SQLModel https://sqlmodel.tiangolo.com/ since it's built on top of SQLAlchemy and Pydantic
 
 async def init_db():
     """Create database tables"""

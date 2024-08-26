@@ -6,8 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from src.database import init_db
-from src.server.auth.endpoint import api as auth_api
-from src.server.utils.endpoint import api as utils_api
+from src.server.auth.router import api as auth_api
+from src.server.utils.router import api as utils_api
 
 logger = logging.getLogger(__name__)
 
@@ -45,3 +45,20 @@ app.add_middleware(
 
 app.include_router(utils_api)
 app.include_router(auth_api)
+
+
+""" 
+Server Package Descriptions: 
+1. `router.py` - core of each module with all the endpoints 
+2. `schemas.py` - pydantic models 
+3. `models.py` - db models 
+4. `service.py` - module specific business logic 
+5. `dependencies.py` - router dependencies 
+6. `constants.py` - module specific constants and error codes 
+7. `config.py` - env vars 
+8. `utils.py` - non-business logic functions 
+9. `exceptions.py` - module specific exceptions 
+
+Notes: 
+1. FastAPI runs `sync` routes in the `threadpool` and blocking I/O operations won't stop the event loop from executing tasks. 
+"""
