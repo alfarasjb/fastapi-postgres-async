@@ -1,5 +1,7 @@
 # FastAPI Server 
 
+This repository attempts to replicate best practices in FastAPI from [this](https://github.com/zhanymkanov/fastapi-best-practices) repository.
+
 ### Setup Alembic  
 - Navigate to your project directory, and generate alembic files by running the ff. command on your terminal: 
 ```bash
