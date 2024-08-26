@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     POSTGRES_HOST: str = Field("localhost", env="POSTGRES_HOST")
     POSTGRES_PORT: str = Field("5433", env="POSTGRES_PORT")
     ASYNC_POSTGRES_URI: Optional[PostgresDsn] = None
+    TEST_POSTGRES_URI: Optional[PostgresDsn] = None
 
     class Config:
         # Used to configure the behavior of the Pydantic Model.
@@ -35,5 +36,6 @@ class Settings(BaseSettings):
             path=model.POSTGRES_DB
         )
         model.ASYNC_POSTGRES_URI = str(uri)  # Set this as attribute
+        model.TEST_POSTGRES_URI = model.ASYNC_POSTGRES_URI.replace(model.POSTGRES_DB, 'test_db')
         return uri
 
