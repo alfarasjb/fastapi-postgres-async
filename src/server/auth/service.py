@@ -1,8 +1,8 @@
 import logging
-from typing import Sequence
+from typing import Sequence, Optional
 
-from sqlalchemy.ext.asyncio.session import AsyncSession
-from sqlalchemy.future import select
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.server.auth import schemas, models
 
@@ -25,6 +25,7 @@ They define the structure of your database entities.
 which can then be added, updated, or deleted, from the database. 
 """
 
+# TODO: Maybe wrap the db services in try-except blocks?
 
 class AuthService:
     """ 
@@ -39,13 +40,16 @@ class AuthService:
         """
         logger.info(f"Getting All users")
         statement = select(models.User)
-        result = await self.session.execute(statement)
+        result = await self.session.exec(statement)
         # Always get scalar. Otherwise, you will get a value error
-        users = result.scalars().all()
+        users = result.all()
         logger.info(f"Result: {users}")
         return users
 
     async def create_user(self, user: schemas.User) -> models.User:
+        """
+        Creates a user
+        """
         user_model = models.User(name=user.name, email=user.email)
         self.session.add(user_model)
         await self.session.commit()
@@ -54,27 +58,31 @@ class AuthService:
 
     async def get_user_by_id(self, user_id: int) -> models.User:
         statement = select(models.User).where(models.User.id == user_id)
-        result = await self.session.execute(statement)
-        user = result.scalars().first()
+        result = await self.session.exec(statement)
+        user = result.first()
         return user
 
-    async def delete_user_by_id(self, user_id: int) -> None:
+    async def delete_user_by_id(self, user_id: int) -> Optional[models.User]:
         statement = select(models.User).where(models.User.id == user_id)
-        result = await self.session.execute(statement)
-        user = result.scalar()
-        await self.session.delete(user)
-        await self.session.commit()
+        result = await self.session.exec(statement)
+        user = result.first()
+        if user:
+            await self.session.delete(user)
+            await self.session.commit()
+            logger.info(f"Deleted User Id: {user_id} from database.")
+            return user
+        logger.info(f"User with ID: {user_id} not found in database.")
 
     async def get_user_by_name(self, user_name: str) -> models.User:
         statement = select(models.User).where(models.User.name == user_name)
-        result = await self.session.execute(statement)
-        user = result.scalar().first()
+        result = await self.session.exec(statement)
+        user = result.first()
         return user
 
     async def get_user_by_email(self, user_email: str) -> models.User:
         statement = select(models.User).where(models.User.email == user_email)
-        result = await self.session.execute(statement)
-        user = result.scalar().first()
+        result = await self.session.exec(statement)
+        user = result.first()
         return user
 
     async def update_user(self, user: schemas.User):

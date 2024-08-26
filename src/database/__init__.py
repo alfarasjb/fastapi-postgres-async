@@ -1,8 +1,10 @@
 import logging
 
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker
+from sqlmodel import SQLModel
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.config import SETTINGS
 
@@ -23,7 +25,8 @@ async def init_db():
         async with async_engine.begin() as conn:
             # Import the models to register them with SQLAlchemy
             from src.server.auth.models import User
-            await conn.run_sync(Base.metadata.create_all)
+            # await conn.run_sync(Base.metadata.create_all)
+            await conn.run_sync(SQLModel.metadata.create_all)
     except Exception as e:
         logger.error(f"An error occurred initializing database. Error: {e}", exc_info=True)
         raise
