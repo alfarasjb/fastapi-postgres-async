@@ -9,15 +9,15 @@ logger = logging.getLogger(__name__)
 Base = declarative_base()
 
 DATABASE_URL = Credentials.database_url()
-print(f"DB: {DATABASE_URL}")
-async_engine = create_async_engine(url=Credentials.database_url())
 
+async_engine = create_async_engine(url=Credentials.database_url())
 
 
 async def init_db():
     """Create database tables"""
     try:
         async with async_engine.begin() as conn:
+            # Import the models to register them with SQLAlchemy
             from src.server.auth.models import User
             await conn.run_sync(Base.metadata.create_all)
     except Exception as e:

@@ -2,6 +2,9 @@ from src.server import app
 import logging
 import uvicorn
 
+# TODO: Fix Typings
+# TODO: Deploy
+
 # More Resources
 # https://medium.com/@lawsontaylor/the-ultimate-fastapi-project-setup-fastapi-async-postgres-sqlmodel-pytest-and-docker-ed0c6afea11b
 
