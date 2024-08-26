@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Request, Response, HTTPException, Depends
-from sqlalchemy.ext.asyncio.session import AsyncSession
-from src.server.auth import schemas
 import logging
-from src.server.auth.service import AuthService
+
+from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy.ext.asyncio.session import AsyncSession
+
 from src.database import get_session
+from src.server.auth import schemas
+from src.server.auth.service import AuthService
 
 logger = logging.getLogger(__name__)
 

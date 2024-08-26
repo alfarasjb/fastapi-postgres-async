@@ -1,16 +1,10 @@
-from src.database import Base
-
 from sqlalchemy import (
     Column,
     Integer,
-    DateTime,
-    func,
-    Enum,
-    JSON,
     String,
-    ForeignKey,
-    UniqueConstraint,
 )
+
+from src.database import Base
 
 
 class User(Base):

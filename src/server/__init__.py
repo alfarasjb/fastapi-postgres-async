@@ -10,8 +10,21 @@ from src.server.utils.endpoint import api as utils_api
 
 logger = logging.getLogger(__name__)
 
+"""
+This can also be used. This will be the `lifespan` parameter in the FastAPI instance. 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("server is starting")
+    await init_db()
+    yield
+    print("server is shutting down")
+"""
 
-app = FastAPI()
+app = FastAPI(
+    title="Async FastAPI + Postgres",
+    description="A simple server using Async FastAPI and Postgres"
+    # lifespan=lifespan
+)
 
 app.add_middleware(
     CORSMiddleware,

@@ -1,16 +1,19 @@
+import logging
+
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import declarative_base
-from src.config.credentials import Credentials
 from sqlalchemy.orm import sessionmaker
-import logging
+
+from src.config import SETTINGS
 
 logger = logging.getLogger(__name__)
 # Used in db models
 Base = declarative_base()
 
-DATABASE_URL = Credentials.database_url()
-
-async_engine = create_async_engine(url=Credentials.database_url())
+# DATABASE_URL = Credentials.database_url()
+DATABASE_URL = SETTINGS.ASYNC_POSTGRES_URI
+print(f"DB URL: {type(DATABASE_URL)}")
+async_engine = create_async_engine(url=DATABASE_URL)
 
 
 async def init_db():
