@@ -1,12 +1,13 @@
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
-from src.server.utils.endpoint import api as utils_api
-from src.server.auth.endpoint import api as auth_api
-from contextlib import asynccontextmanager
-import logging
 from src.database import init_db, cleanup
+from src.server.auth.endpoint import api as auth_api
+from src.server.utils.endpoint import api as utils_api
+
 logger = logging.getLogger(__name__)
 
 

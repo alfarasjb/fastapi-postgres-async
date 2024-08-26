@@ -1,6 +1,14 @@
+import logging
+
 from sqlalchemy.ext.asyncio.session import AsyncSession
-from src.server.auth import schemas, models
 from sqlalchemy.future import select
+
+from src.server.auth import schemas, models
+
+logger = logging.getLogger(__name__)
+
+# Note: Use Schemas for arguments, and Map the schemas to models.
+# Note: session.query does not exist for AsyncSession.
 
 
 class AuthService:
@@ -14,9 +22,13 @@ class AuthService:
         """
         Get list of all users
         """
+        logger.info(f"Getting All users")
         statement = select(models.User)
         result = await self.session.execute(statement)
-        return result.all()
+        # Always get scalar. Otherwise, you will get a value error
+        users = result.scalars().all()
+        logger.info(f"Result: {users}")
+        return users
 
     async def create_user(self, user: schemas.User):
         user_model = models.User(name=user.name, email=user.email)
@@ -28,7 +40,8 @@ class AuthService:
     async def get_user_by_id(self, user_id: int):
         statement = select(models.User).where(models.User.id == user_id)
         result = await self.session.execute(statement)
-        return result.first()
+        user = result.scalars().first()
+        return user
 
     async def delete_user_by_id(self, user_id: int):
         statement = select(models.User).where(models.User.id == user_id)
