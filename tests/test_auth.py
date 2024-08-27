@@ -50,7 +50,8 @@ async def async_client():
         yield ac
 
 
-def test_create_user():
+@pytest.mark.asyncio
+async def test_create_user():
     response = client.post(CREATE_USER_ROUTE, json={"name": "test_name", "email": "test_email"})
     assert response.status_code == 200
     data = response.json()
@@ -58,12 +59,14 @@ def test_create_user():
     assert data['email'] == "test_email"
 
 
-def test_get_users():
+@pytest.mark.asyncio
+async def test_get_users():
     response = client.get(GET_USERS_ROUTE)
     print(response.status_code)
     assert response.status_code == 200
 
 
+"""
 def test_get_user_by_user_id():
     pass
 
@@ -74,3 +77,4 @@ def test_update_user():
 
 def test_delete_user():
     pass
+"""
