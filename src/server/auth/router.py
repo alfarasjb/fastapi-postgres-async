@@ -59,7 +59,7 @@ async def get_user_by_user_id(
         raise HTTPException(status_code=500, detail=err_msg)
 
 
-@api.post(UPDATE_USER_ROUTE, response_model=schemas.User)
+@api.put(UPDATE_USER_ROUTE, response_model=schemas.User)
 async def update_user(
         user_id: int, user: schemas.User, session: AsyncSession = Depends(get_session)
 ) -> Optional[models.User]:
@@ -74,7 +74,7 @@ async def update_user(
         raise HTTPException(status_code=500, detail=err_msg)
 
 
-@api.post(DELETE_USER_ROUTE)
+@api.delete(DELETE_USER_ROUTE)
 async def delete_user(
         user_id: int, session: AsyncSession = Depends(get_session)
 ) -> None:
