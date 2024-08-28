@@ -10,7 +10,6 @@ from src.config import SETTINGS
 
 logger = logging.getLogger(__name__)
 # Used in db models
-Base = declarative_base()
 
 # DATABASE_URL = Credentials.database_url()
 DATABASE_URL = SETTINGS.ASYNC_POSTGRES_URI
