@@ -8,6 +8,7 @@ from src.database import get_session
 from src.server.auth import schemas, models
 from src.server.auth.service import AuthService
 from src.server.auth.constants import *
+from src.services.jwt_sign import decode, sign
 
 logger = logging.getLogger(__name__)
 
@@ -86,3 +87,18 @@ async def delete_user(
         err_msg = f"Failed to delete user. An unknown error occurred."
         logger.error(f"{err_msg} Error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=err_msg)
+
+
+@api.post("/auth/signup")
+def sign_up():
+    pass
+
+
+@api.post("/auth/login")
+def login():
+    pass
+
+
+@api.post("/auth/decode")
+def auth_test(decoded: str = Depends(decode)):
+    return decoded

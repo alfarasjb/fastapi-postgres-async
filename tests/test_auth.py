@@ -12,6 +12,7 @@ from src.database import get_session
 from src.main import app
 from src.server.auth.constants import *
 
+# https://fastapi.tiangolo.com/advanced/async-tests/
 # Run pytest --disable-warnings -s
 # TODO: Fix the tests
 
@@ -33,7 +34,7 @@ client = TestClient(app)
 app.dependency_overrides[get_session] = override_get_session
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(autouse=True)
 async def prepare_database():
     """Fixture to initialize and clean up db"""
     async with engine.begin() as conn:
@@ -44,24 +45,24 @@ async def prepare_database():
         await conn.run_sync(SQLModel.metadata.drop_all)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 async def async_client():
     async with AsyncClient(app=app, base_url="http://test") as ac:
         yield ac
 
 
-@pytest.mark.asyncio
-async def test_create_user():
-    response = client.post(CREATE_USER_ROUTE, json={"name": "test_name", "email": "test_email"})
+@pytest.mark.anyio
+async def test_create_user(async_client):
+    response = await async_client.post(CREATE_USER_ROUTE, json={"name": "test_name", "email": "test_email"})
     assert response.status_code == 200
     data = response.json()
     assert data['name'] == "test_name"
     assert data['email'] == "test_email"
 
 
-@pytest.mark.asyncio
-async def test_get_users():
-    response = client.get(GET_USERS_ROUTE)
+@pytest.mark.anyio
+async def test_get_users(async_client):
+    response = await async_client.get(GET_USERS_ROUTE)
     print(response.status_code)
     assert response.status_code == 200
 
