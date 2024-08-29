@@ -101,3 +101,25 @@ class AuthService:
             await self.session.commit()
             await self.session.refresh(existing_user)
             return existing_user
+
+    async def upsert_oauth_token_from_user(
+            self, user_id: int, oauth_token: schemas.OAuthToken
+    ) -> models.OAuthToken:
+        token_model = models.OAuthToken(
+            user_id=user_id,
+            access_token=oauth_token.access_token,
+            refresh_token=oauth_token.refresh_token,
+            expires_at=oauth_token.expires_at
+        )
+        self.session.add(token_model)
+        await self.session.commit()
+        await self.session.refresh(token_model)
+        return token_model
+
+    async def get_oauth_token_from_user_id(
+            self, user_id: int
+    ) -> models.OAuthToken:
+        statement = select(models.OAuthToken).where(models.OAuthToken.user_id == user_id)
+        result = await self.session.exec(statement)
+        oauth_token = result.first()
+        return oauth_token

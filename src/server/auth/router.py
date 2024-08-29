@@ -89,10 +89,10 @@ async def delete_user(
         raise HTTPException(status_code=500, detail=err_msg)
 
 
-@api.post("/auth/signup", response_model=models.User)
+@api.post("/auth/signup", response_model=models.OAuthToken)
 async def sign_up(
         user: schemas.UserCreate, session: AsyncSession = Depends(get_session)
-) -> models.User:
+) -> models.OAuthToken:
     try:
         logger.info(f"Signing up..")
         # Check if registered. raise error if already registered
@@ -104,7 +104,11 @@ async def sign_up(
         user.password = hash_password(user.password)
         # Store to db
         created_user = await service.create_user(user=user)
-        return created_user
+        # Generate OAuth Token
+        access_token = sign(created_user.email)
+        oauth_token = schemas.OAuthToken(access_token=access_token)
+        token_model = await service.upsert_oauth_token_from_user(created_user.id, oauth_token=oauth_token)
+        return token_model
     except HTTPException as e:
         err_msg = f"Failed to register user. User already exists."
         logger.error(f"{err_msg} Error: {e}")
@@ -115,8 +119,10 @@ async def sign_up(
         raise HTTPException(status_code=500, detail=err_msg)
 
 
-@api.post("/auth/login")
-async def login(user: schemas.UserLogin, session: AsyncSession = Depends(get_session)):
+@api.post("/auth/login", response_model=models.OAuthToken)
+async def login(
+        user: schemas.UserLogin, session: AsyncSession = Depends(get_session)
+) -> models.OAuthToken:
     try:
         logger.info(f"Logging in..")
         # Check if user exists in db. If not, raise error.
@@ -129,7 +135,9 @@ async def login(user: schemas.UserLogin, session: AsyncSession = Depends(get_ses
         # Raise error if incorrect
         if not is_valid_password:
             raise HTTPException(status_code=401, detail="Incorrect password")
-        return stored_user
+        # Get the OAuth Token
+        oauth_token = await service.get_oauth_token_from_user_id(user_id=stored_user.id)
+        return oauth_token
     except HTTPException as e:
         logger.error(f"Failed to login user. Error: {str(e)}")
         raise

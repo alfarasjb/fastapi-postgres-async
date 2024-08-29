@@ -1,16 +1,19 @@
 import secrets
 from typing import Any
-
+import datetime
 import jwt
 from fastapi import HTTPException
 import bcrypt
 JWT_SECRET = secrets.token_hex(16)
 JWT_ALGORITHM = "HS256"
+EXPIRE_MINUTES = 30
 
 
 def sign(email: str) -> str:
+    expire = datetime.datetime.utcnow() + datetime.timedelta(minutes=EXPIRE_MINUTES)
     payload = {
-        "email": email
+        "sub": email,
+        "exp": expire
     }
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
     return token
