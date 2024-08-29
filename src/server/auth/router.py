@@ -8,7 +8,7 @@ from src.database import get_session
 from src.server.auth import schemas, models
 from src.server.auth.service import AuthService
 from src.server.auth.constants import *
-from src.services.jwt_sign import decode, sign
+from src.services.jwt_sign import decode, sign, hash_password, check_password
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ api = APIRouter()
 
 @api.post(CREATE_USER_ROUTE, response_model=schemas.User)
 async def create_user(
-        user: schemas.User, session: AsyncSession = Depends(get_session)
+        user: schemas.UserCreate, session: AsyncSession = Depends(get_session)
 ) -> Optional[models.User]:
     try:
         logger.info(f"Creating user. Email: {user.email} Name: {user.name}")
@@ -89,16 +89,52 @@ async def delete_user(
         raise HTTPException(status_code=500, detail=err_msg)
 
 
-@api.post("/auth/signup")
-def sign_up():
-    pass
+@api.post("/auth/signup", response_model=models.User)
+async def sign_up(
+        user: schemas.UserCreate, session: AsyncSession = Depends(get_session)
+) -> models.User:
+    try:
+        logger.info(f"Signing up..")
+        # Check if registered. raise error if already registered
+        service = AuthService(session=session)
+        stored_user = await service.get_user_by_email(user_email=user.email)
+        if stored_user:
+            raise HTTPException(status_code=409, detail="User already exists.")
+        # Hash the password and create user
+        user.password = hash_password(user.password)
+        # Store to db
+        created_user = await service.create_user(user=user)
+        return created_user
+    except HTTPException as e:
+        err_msg = f"Failed to register user. User already exists."
+        logger.error(f"{err_msg} Error: {e}")
+        raise
+    except Exception as e:
+        err_msg = f"Failed to register user. An unknown error occurred."
+        logger.error(f"{err_msg} Error: {e}")
+        raise HTTPException(status_code=500, detail=err_msg)
 
 
 @api.post("/auth/login")
-def login():
-    pass
+async def login(user: schemas.UserLogin, session: AsyncSession = Depends(get_session)):
+    try:
+        logger.info(f"Logging in..")
+        # Check if user exists in db. If not, raise error.
+        service = AuthService(session=session)
+        stored_user = await service.get_user_by_email(user_email=user.email)
+        if not stored_user:
+            raise HTTPException(status_code=404, detail="User not found")
+        # Check stored password
+        is_valid_password = check_password(password=user.password, hashed_password=stored_user.password)
+        # Raise error if incorrect
+        if not is_valid_password:
+            raise HTTPException(status_code=401, detail="Incorrect password")
+        return stored_user
+    except HTTPException as e:
+        logger.error(f"Failed to login user. Error: {str(e)}")
+        raise
+    except Exception as e:
+        err_msg = f"Failed to login user. An unknown error occurred."
+        logger.error(f"{err_msg} Error: {e}")
+        raise HTTPException(status_code=500, detail=err_msg)
 
-
-@api.post("/auth/decode")
-def auth_test(decoded: str = Depends(decode)):
-    return decoded

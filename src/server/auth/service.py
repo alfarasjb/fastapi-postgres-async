@@ -26,6 +26,7 @@ which can then be added, updated, or deleted, from the database.
 """
 
 # TODO: Maybe wrap the db services in try-except blocks?
+# TODO: RETURN THE TOKENS
 
 class AuthService:
     """ 
@@ -47,11 +48,11 @@ class AuthService:
         logger.info(f"Result: {users}")
         return users
 
-    async def create_user(self, user: schemas.User) -> models.User:
+    async def create_user(self, user: schemas.UserCreate) -> models.User:
         """
         Creates a user
         """
-        user_model = models.User(name=user.name, email=user.email)
+        user_model = models.User(name=user.name, email=user.email, password=user.password)
         self.session.add(user_model)
         await self.session.commit()
         await self.session.refresh(user_model)

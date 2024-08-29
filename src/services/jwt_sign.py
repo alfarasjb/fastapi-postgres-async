@@ -3,7 +3,7 @@ from typing import Any
 
 import jwt
 from fastapi import HTTPException
-
+import bcrypt
 JWT_SECRET = secrets.token_hex(16)
 JWT_ALGORITHM = "HS256"
 
@@ -22,3 +22,13 @@ def decode(token: str) -> Any:
         return decoded_token
     except Exception as e:
         raise HTTPException(status_code=401, detail="Invalid Token")
+
+
+def hash_password(password: str) -> str:
+    salt = bcrypt.gensalt()
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return hashed_password.decode('utf-8')
+
+
+def check_password(password: str, hashed_password: str) -> bool:
+    return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
