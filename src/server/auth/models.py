@@ -33,4 +33,4 @@ class OAuthToken(SQLModel, table=True):
     created_at: datetime = Field(sa_column=Column(DateTime, default=datetime.now()))
 
     # Relationship
-    user = relationship("User", back_populates="tokens")
+    # user: User = relationship("User", back_populates="tokens")

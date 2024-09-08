@@ -1,4 +1,4 @@
-# FastAPI Server 
+# Backend Template with FastAPI, Postgres, and Alembic 
 
 This repository attempts to replicate best practices in FastAPI from [this](https://github.com/zhanymkanov/fastapi-best-practices) repository.
 
